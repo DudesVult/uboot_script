@@ -34,15 +34,11 @@ def name_to_32bit(name:str):
         name += b'\x00' * (32 - len(name))
     return name
 
-def main(file):
-    with open(file, "rb") as f:
-        main_body = f.read()
-
-    main_body_size = len(main_body)
+def form_file(script, name, architecture):
+    main_body_size = len(script)
     body = struct.pack('>II',
-                        main_body_size,
-                        empty_word) + main_body
-
+                       main_body_size,
+                       0) + script
 
     body_crc = calculator.checksum(body)
     body_len = len(body)
@@ -56,13 +52,11 @@ def main(file):
     ih_type = 6 # means it's Script
     ih_comp = 0
 
-    name = "name"       # placeholder for now   #TODO: where should i get name?
-
     name = name_to_32bit(name)
 
     header_without_crc = struct.pack('>IIIIIIIBBBB32s',
                                      magic_number,
-                                     empty_word,
+                                     0,
                                      epoch_time,
                                      body_len,
                                      0,
@@ -78,23 +72,32 @@ def main(file):
     empty_body_crc = calculator.checksum(header_without_crc)
 
     header_crc = struct.pack('>IIIIIIIBBBB32s',
-                                     magic_number,
-                                     empty_body_crc,
-                                     epoch_time,
-                                     body_len,
-                                     0,
-                                     0,
-                                     body_crc,
-                                     ih_os,
-                                     ih_arch,
-                                     ih_type,
-                                     ih_comp,
-                                     name
-                                     )
+                             magic_number,
+                             empty_body_crc,
+                             epoch_time,
+                             body_len,
+                             0,
+                             0,
+                             body_crc,
+                             ih_os,
+                             ih_arch,
+                             ih_type,
+                             ih_comp,
+                             name
+                             )
+    file_content = header_crc + body
+
+    return file_content
+
+def main(file, name, architecture):
+    with open(file, "rb") as f:
+        file = f.read()
+
+    file_content = form_file(file, name, architecture)
 
     with open("test.txt", "wb") as f:
-        f.write(header_crc + body)
+        f.write(file_content)
 
 if __name__ == "__main__":
-    yaml_file = sys.argv[1]
-    main(yaml_file)
+    parameters = sys.argv
+    main(parameters[1], parameters[2], parameters[3])
