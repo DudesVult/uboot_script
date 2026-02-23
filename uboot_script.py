@@ -4,7 +4,26 @@ import struct
 from crc import Calculator, Crc32
 
 magic_number = 0x27051956
-empty_word = 0x00000000
+
+architetures_dict = {
+    "Alpha": 1,
+    "ARM": 2,
+    "x86":	3,
+    "IA64":	4,
+    "MIPS":	5,
+    "MIPS64":	6,
+    "PowerPC":	7,
+    "IBM": 	8,
+    "SuperH": 	9,
+    "SPARC":	10,
+    "SPARC64":	11,
+    "M68k": 	12,
+    "RISC-V": 13,
+    "XTENSA":	14,
+    "ARC":	15,
+    "x86_64": 18
+}
+
 calculator = Calculator(Crc32.CRC32, optimized=True)
 
 def name_to_32bit(name:str):
@@ -30,11 +49,11 @@ def main(file):
 
     epoch_time = int(time.time())
 
-    # This parameters hardcoded for ARM linux for now   #TODO: maybe add parametrization?
+    # This parameters hardcoded to linux for now   #TODO: maybe add parametrization?
 
-    ih_os   = 5
-    ih_arch = 2
-    ih_type = 6
+    ih_os = 5
+    ih_arch = architetures_dict[architecture]
+    ih_type = 6 # means it's Script
     ih_comp = 0
 
     name = "name"       # placeholder for now   #TODO: where should i get name?
